@@ -8,8 +8,15 @@ var postgres = builder.AddPostgres("postgres")
 
 var appDb = postgres.AddDatabase("appdb");
 
-var grafana = builder.AddContainer("grafana", "grafana/grafana")
-                    .WithHttpEndpoint(port: 3000, targetPort: 3000, name: "http");
+builder.AddContainer("prometheus", "prom/prometheus")
+        .WithBindMount("./prometheus.yml", "/etc/prometheus/prometheus.yml")
+        .WithHttpEndpoint(port: 9090, targetPort: 9090, name: "http");
+
+builder.AddContainer("grafana", "grafana/grafana")
+        .WithHttpEndpoint(port: 3000, targetPort: 3000, name: "http")
+        .WithEnvironment("GF_SECURITY_ADMIN_PASSWORD", "admin")
+        .WithEnvironment("GF_AUTH_ANONYMOUS_ENABLED", "true")
+        .WithEnvironment("GF_AUTH_ANONYMOUS_ORG_ROLE", "Admin");
 
 builder.AddProject<Projects.MassTransitDemo_ApiService>("apiservice")
     .WithReference(messaging)
@@ -20,5 +27,4 @@ builder.AddProject<Projects.MassTransitDemo_Worker>("worker")
     .WithReference(messaging)
     .WithReference(appDb)
     .WaitFor(messaging);
-
 builder.Build().Run();
