@@ -1,0 +1,29 @@
+meta {
+  name: Submit Order
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/orders
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "customerNumber": "CUST-BRUNO-001",
+    "amount": 299.99
+  }
+}
+
+assert {
+  res.status: eq 202
+  res.body.customerNumber: eq CUST-BRUNO-001
+  res.body.amount: eq 299.99
+  res.body.orderId: isDefined
+}

@@ -61,3 +61,8 @@ redis_data/
 ehthumbs.db
 Thumbs.db
 
+# macOS local artifacts / stray CLI home
+Library/
+aspire.config.json
+
+

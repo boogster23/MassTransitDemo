@@ -1,12 +1,24 @@
+using MassTransit;
+using MassTransitDemo.Contracts;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
+
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var connString = builder.Configuration.GetConnectionString("messaging");
+        cfg.Host(connString);
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.MapDefaultEndpoints();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -14,28 +26,18 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapPost("/orders", async (SubmitOrder order, IPublishEndpoint publishEndpoint) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var orderToSubmit = order with
+    {
+        OrderId = order.OrderId == Guid.Empty ? Guid.NewGuid() : order.OrderId,
+        CreatedAt = DateTime.UtcNow
+    };
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    await publishEndpoint.Publish(orderToSubmit);
+
+    return Results.Accepted($"/orders/{orderToSubmit.OrderId}", orderToSubmit);
 })
-.WithName("GetWeatherForecast");
+.WithName("SubmitOrder");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
