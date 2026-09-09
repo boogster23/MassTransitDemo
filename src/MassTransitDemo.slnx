@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="MassTransitDemo.ApiService/MassTransitDemo.ApiService.csproj" />
+  <Project Path="MassTransitDemo.AppHost/MassTransitDemo.AppHost.csproj" />
+  <Project Path="MassTransitDemo.Contracts/MassTransitDemo.Contracts.csproj" />
+  <Project Path="MassTransitDemo.ServiceDefaults/MassTransitDemo.ServiceDefaults.csproj" />
+  <Project Path="MassTransitDemo.Worker/MassTransitDemo.Worker.csproj" />
+</Solution>

@@ -1,0 +1,63 @@
+## Build and Output Folders
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+build/
+dist/
+
+## Visual Studio & VS Code
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## JetBrains Rider
+.idea/
+*.sln.iml
+
+## User-specific & Local Environment Settings
+appsettings*.local.json
+appsettings.Local.json
+*.local.env
+.env
+.env.local
+
+## Test & Coverage Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.visualstudio.osx.default.testsettings
+TestResults/
+coverage/
+*.cobertura.xml
+
+## NuGet Packages & Cache
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+project.lock.json
+project.assets.json
+
+## MassTransit & Message Broker Local Volumes / State
+# Local broker persistence when using Docker mounts or local storage
+rabbitmq_data/
+kafka_data/
+activemq_data/
+redis_data/
+
+## OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
