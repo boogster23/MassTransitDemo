@@ -8,4 +8,5 @@ var postgres = builder.AddPostgres("postgres")
 
 var appDb = postgres.AddDatabase("appdb");
 
+
 builder.Build().Run();
