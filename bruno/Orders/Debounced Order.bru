@@ -1,0 +1,26 @@
+meta {
+  name: Debounced Order
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/orders/debounced
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "customerNumber": "CUST-DEBOUNCE-001",
+    "amount": 250.00
+  }
+}
+
+assert {
+  res.status: eq 202
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Rate Limited Order
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/orders/rate-limited
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "customerNumber": "CUST-RATE-001",
+    "amount": 100.00
+  }
+}
+
+assert {
+  res.status: eq 202
+}
