@@ -13,5 +13,5 @@ public class OrderState : SagaStateMachineInstance
     public string? FailureReason { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
-    public int RowVersion { get; set; }
+    public uint RowVersion { get; set; }
 }

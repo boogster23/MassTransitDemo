@@ -33,4 +33,11 @@ builder.Services.AddMassTransit(x =>
 });
 
 var host = builder.Build();
+
+using (var scope = host.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+    dbContext.Database.EnsureCreated();
+}
+
 host.Run();
