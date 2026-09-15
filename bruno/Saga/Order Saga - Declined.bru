@@ -1,0 +1,30 @@
+meta {
+  name: Order Saga - Declined
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/orders/
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "customerNumber": "CUST-SAGA-DECLINED-001",
+    "amount": 1500.00
+  }
+}
+
+assert {
+  res.status: eq 202
+  res.body.customerNumber: eq CUST-SAGA-DECLINED-001
+  res.body.amount: eq 1500
+  res.body.orderId: isDefined
+}
+

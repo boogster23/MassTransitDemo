@@ -4,4 +4,5 @@
   <Project Path="MassTransitDemo.Contracts/MassTransitDemo.Contracts.csproj" />
   <Project Path="MassTransitDemo.ServiceDefaults/MassTransitDemo.ServiceDefaults.csproj" />
   <Project Path="MassTransitDemo.Worker/MassTransitDemo.Worker.csproj" />
+  <Project Path="../tests/MassTransitDemo.Tests/MassTransitDemo.Tests.csproj" />
 </Solution>

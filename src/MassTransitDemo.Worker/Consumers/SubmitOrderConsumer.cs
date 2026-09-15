@@ -1,4 +1,4 @@
-namespace MassTransitDemo.Worker;
+namespace MassTransitDemo.Worker.Consumers;
 
 using MassTransit;
 using MassTransitDemo.Contracts;
