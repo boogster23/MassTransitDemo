@@ -1,10 +1,10 @@
-# MassTransit & .NET Aspire Demo
+# MassTransit and .NET Aspire Demo
 
-A distributed .NET 10 messaging solution demonstrating event-driven pub/sub architecture and **Saga State Machine orchestration** using [MassTransit](https://masstransit.io/), backed by **PostgreSQL** and orchestrated locally with [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/).
+This project shows a small .NET 10 application that uses MassTransit, RabbitMQ, PostgreSQL, and .NET Aspire. It includes a saga state machine, an order API, and a payment consumer.
 
 ---
 
-## 🏗️ Architecture & Messaging Flow
+## Architecture and Messaging Flow
 
 ```mermaid
 flowchart LR
@@ -20,20 +20,20 @@ flowchart LR
 
 ---
 
-## 🚀 Key Features
+## Features
 
-- **Event-Driven Messaging**: MassTransit RabbitMQ pub/sub integration.
-- **Saga State Machine Orchestration**: Long-running distributed order transaction management with automated state transitions, event correlation, and compensation logic.
-- **Durable Saga Persistence**: State machine instances persisted to **PostgreSQL (`appdb`)** using **Entity Framework Core** with optimistic concurrency (`RowVersion`).
-- **Fixed Window Rate Limiting**: Protects endpoints against traffic spikes using ASP.NET Core rate limiting (`5 requests / 10s` per client IP / user, zero queue for instant rejection with `429 Too Many Requests`).
-- **Request Debouncer**: In-memory caching guard (`DebounceGuard`) that suppresses rapid duplicate submissions within a configurable interval (default `500ms`), preventing double-submits.
-- **Observability & Health Checks**: OpenTelemetry metrics, Prometheus exporter, Grafana dashboards, and Aspire distributed tracing.
+- MassTransit uses RabbitMQ for messaging.
+- The order saga stores its state in PostgreSQL through Entity Framework Core.
+- The saga uses optimistic concurrency with a `RowVersion` field.
+- The API has a fixed-window rate limit of 5 requests per 10 seconds for each client.
+- The debounced endpoint ignores duplicate requests received within the configured interval. The default is 500 milliseconds.
+- Aspire provides health checks, telemetry, Prometheus metrics, and local service orchestration.
 
 ---
 
-## 🔄 Saga Lifecycle & State Transitions
+## Saga Lifecycle
 
-The `OrderStateMachine` manages the lifecycle of each order from submission through payment verification:
+The `OrderStateMachine` handles an order submission and waits for the payment result.
 
 ```mermaid
 stateDiagram-v2
@@ -48,7 +48,7 @@ stateDiagram-v2
 
 Persisted in PostgreSQL table **`OrderStates`**:
 
-| State | Trigger | Action / Persisted Fields |
+| State | Trigger | Action and persisted fields |
 | :--- | :--- | :--- |
 | **`Submitted`** | `SubmitOrder` | Saga created; stores `CustomerNumber`, `Amount`, `CreatedAt`. Dispatches `ProcessPayment` command. |
 | **`Accepted`** | `OrderPaymentCompleted` | Payment approved; stores `PaymentTransactionId` (e.g. `TXN-...`) and `CompletedAt`. |
@@ -56,9 +56,9 @@ Persisted in PostgreSQL table **`OrderStates`**:
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
-All order endpoints accept a JSON payload:
+The order endpoints accept this JSON payload:
 ```json
 {
   "customerNumber": "CUST-001",
@@ -66,13 +66,13 @@ All order endpoints accept a JSON payload:
 }
 ```
 
-| Method | Route | Description | Resilience Behavior |
+| Method | Route | Description | Behavior |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/orders` | Standard order submission | Direct submission; returns `202 Accepted` with generated `OrderId`. Triggers the Saga. |
-| `POST` | `/api/orders/rate-limited` | Rate-limited order submission | Protected by `orders-fixed` policy (5 requests / 10s window). Returns `429 Too Many Requests` when exceeded. |
-| `POST` | `/api/orders/debounced` | Debounced order submission | Guarded by `DebounceGuard`. Rapid duplicate submissions within the debounce interval (500ms) are suppressed (`202 Accepted` with suppression message). |
+| `POST` | `/api/orders` | Submit an order. | Returns `202 Accepted` with an `OrderId`. Starts the saga. |
+| `POST` | `/api/orders/rate-limited` | Submit an order through the rate-limited endpoint. | Allows 5 requests per 10-second window and returns `429 Too Many Requests` after that. |
+| `POST` | `/api/orders/debounced` | Submit an order through the debounced endpoint. | Suppresses rapid duplicate requests within the debounce interval. |
 
-### Debounce Configuration
+### Debounce configuration
 
 Configured in `appsettings.json`:
 ```json
@@ -83,7 +83,7 @@ Configured in `appsettings.json`:
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 MassTransitDemo/
@@ -116,7 +116,7 @@ MassTransitDemo/
 
 ---
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - [Docker Desktop](https://www.docker.com/) or [OrbStack](https://orbstack.dev/)
@@ -125,11 +125,11 @@ MassTransitDemo/
 
 ---
 
-## 🏃 Getting Started
+## Getting Started
 
-### 1. Start the Solution via Aspire
+### 1. Start the application
 
-Aspire spins up all containers (RabbitMQ, PostgreSQL, pgAdmin, Grafana, Prometheus) and service dependencies automatically:
+Aspire starts the API, worker, RabbitMQ, PostgreSQL, pgAdmin, Grafana, and Prometheus:
 
 ```bash
 aspire run
@@ -137,24 +137,21 @@ aspire run
 dotnet run --project src/MassTransitDemo.AppHost
 ```
 
-### 2. Open the Aspire Dashboard
+### 2. Open the Aspire dashboard
 
-When Aspire starts, click the dashboard URL printed in your terminal (e.g. `https://localhost:17...`).
+When Aspire starts, open the dashboard URL printed in the terminal.
 
-In the dashboard, you'll find:
-- **`apiservice`**: Assigned API endpoint.
-- **`worker`**: Background saga orchestrator and consumer service.
-- **`messaging`**: RabbitMQ instance with a direct link to the **RabbitMQ Management UI**.
-- **`postgres` & `appdb`**: PostgreSQL database with a link to **pgAdmin**.
-- **`grafana`**: Visualization container (`http://localhost:3000`).
-- **`prometheus`**: Metrics scraper (`http://localhost:9090`).
-- **Distributed Traces & Structured Logs**: Real-time OpenTelemetry tracking across the entire saga pipeline.
+The dashboard shows the API, worker, RabbitMQ, PostgreSQL, and telemetry resources. It also provides links to the RabbitMQ management UI and pgAdmin.
+
+Grafana uses `http://localhost:3000` and Prometheus uses `http://localhost:9090` when those ports are available. The local Grafana container uses anonymous admin access, so do not expose it outside your development machine.
+
+In the Development environment, the worker creates the saga database schema on startup. This keeps the demo setup simple. A production application should use EF Core migrations instead.
 
 ---
 
-## 🧪 Testing
+## Testing
 
-### Option 1: Bruno Collection
+### Bruno collection
 
 1. Open the [Bruno](https://www.usebruno.com/) desktop app.
 2. Click **Open Collection** and select the `bruno/` directory.
@@ -167,7 +164,7 @@ In the dashboard, you'll find:
    - **Orders / Debounced Order** (`POST /api/orders/debounced`): Tests rapid repeat suppression.
    - **Health / Alive** (`GET /alive`): Validates Aspire health checks.
 
-### Option 2: Inspecting Sagas in pgAdmin
+### Inspecting sagas in pgAdmin
 
 1. Click the **pgAdmin** resource in the Aspire Dashboard.
 2. Connect to the **`appdb`** database.
@@ -178,7 +175,7 @@ In the dashboard, you'll find:
    ```
 4. Observe the state update in real-time as orders are submitted!
 
-### Option 3: Hurl Integration Tests
+### Hurl integration tests
 
 Automated CLI test scripts are located in `tests/hurl/`:
 
@@ -199,22 +196,19 @@ hurl tests/hurl/orders-saga-approved.hurl
 hurl tests/hurl/orders-saga-declined.hurl
 ```
 
-### Option 4: Local Unit Tests (xUnit & MassTransit TestHarness)
+### Unit tests
 
-Run all unit tests locally without external infrastructure (in-memory bus and state machine harness):
+Run the unit tests locally without RabbitMQ or PostgreSQL:
 
 ```bash
 dotnet test
 ```
 
-This validates:
-- **`OrderStateMachineTests`**: State creation, event transitions (`Submitted` ➔ `Accepted` / `Cancelled`), and published commands.
-- **`ProcessPaymentConsumerTests`**: Business rules for approvals vs. declines.
-- **`DebounceGuardTests`**: Time-window locking and expiration.
+The tests cover the order state machine, payment consumer, and debounce guard.
 
 ---
 
-## 📦 Key Packages Used
+## Packages
 
 - **MassTransit** (`8.3.6`) & **MassTransit.RabbitMQ** (`8.3.6`) — Messaging framework.
 - **MassTransit.EntityFrameworkCore** (`8.3.6`) — PostgreSQL saga state repository provider.
