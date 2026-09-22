@@ -20,7 +20,6 @@ builder.AddContainer("grafana", "grafana/grafana")
 
 builder.AddProject<Projects.MassTransitDemo_ApiService>("apiservice")
     .WithReference(messaging)
-    .WithReference(appDb)
     .WaitFor(messaging);
 
 builder.AddProject<Projects.MassTransitDemo_Worker>("worker")
